@@ -1,0 +1,375 @@
+import xlrd # this library to read the excel sheets
+import xlwt # this library to write to excel sheets
+import os #functions of the os
+import sys
+import tkinter as tk #for our GUI
+import xlutils
+from tkinter import * # from tminter import all
+from tkinter.ttk import * # all for our message GUI
+from tkinter import messagebox #and for the after message box
+from datetime import datetime #so we can grab date time and put it on the name of the file.
+
+errors = 0 # this will be our function that counts errors
+#finished process box
+def finishedbox(): # for the errors and displaying how many errors happend while it ran
+    global errors #making errors a global variable
+    window = tk.Tk() # making it easier to read so I don't have to type tk.TK() all the time
+    window.wm_withdraw() #same thing as saying tk.TK().wm_withdraw()
+    window.geometry("1x1+200+200") #size of our box
+    messagebox.showinfo(title="The Automated Standard - JB, AM, CO version", message="There were " + str(errors) + " errors!")
+# ^^ this is what it will say when done! and on the top of the box.
+def MAINFUN2(): #mainfun2 is where we keep track of date and time of program running
+    #pull date
+    d = datetime.date(datetime.now())
+    ddaystring = "" #for our day
+    dmonthstring = "" #for our month
+    dday = d.day #dday is set equal to the library that actually grabs the day
+    if dday < 10: #if the day is less then 10
+            ddaystring = "0" + str(dday) #then it puts a 0 in front of the day
+    else: #otherwise
+        ddaystring = str(dday) #the dday string is set to the library that keeps track
+    dmonth = d.month #we repeat the same proccess with the month
+    if dmonth < 10:
+        dmonthstring = "0" + str(dmonth)
+    else:
+        dmonthstring = str(dmonth)
+    dyearstring = str(d.year-2000) #we set up our year but beacuse we don't have anything below 10 no need for the rest
+    #now we have day, month, and year
+
+    #keep count of errors
+    global errors
+    #errors = 0
+
+    #open the target workbook
+    wb = xlrd.open_workbook("target.xlsx") #opens target.xlsx
+    sheet = wb.sheet_by_index(0) #starts at the start and we call the variable keeping track 'sheet'
+
+    #creates a new sheet to start copying info
+    newwb = xlwt.Workbook(encoding = 'ascii')
+    newsheet = newwb.add_sheet('Sheet1')
+
+    #create a universal font we use
+    font = xlwt.Font() #creating a variable called font
+    font.name = "Calibri" #setting the type
+    font.height = 11*20 #size
+    style = xlwt.XFStyle() #creating a style variable
+    style.font = font #just simply combines it all together
+
+    #write our headers to the new sheet
+    newsheet.write(0, 0, "Contact ID", style)
+    newsheet.write(0, 1, "First Name", style)
+    newsheet.write(0, 2, "Last Name", style)
+    newsheet.write(0, 3, "Mailing Street", style)
+    newsheet.write(0, 4, "Mailing City", style)
+    newsheet.write(0, 5, "Mailing State/Province", style)
+    newsheet.write(0, 6, "Mailing Zip/Postal Code", style)
+    newsheet.write(0, 7, "Contact Owner", style)
+    newsheet.write(0, 8, "Owner e-mail address", style)
+    newsheet.write(0, 9, "Gender", style)
+    newsheet.write(0, 11, "LeadTypeID", style)
+    newsheet.write(0, 10, "Campus", style)
+    newsheet.write(0, 12, "Anticipated Major", style)
+    newsheet.write(0, 13, "Created Date", style)
+    newsheet.write(0, 14, "Email", style)
+    newsheet.write(0, 15, "HubSpot ID", style)
+
+    #create a date format for any dates in the sheet
+    date_format = xlwt.XFStyle() #if you remember from earlier this just stylees our date
+    date_format.num_format_str = 'mm/dd/yyyy' #sets our format
+    date_format.font = font #and sets the font to our font variable we created
+
+    #these variables store the column where the data is located in the pull
+    #they exists so that no matter which column the data is, it can be found
+    contactid = 0
+    firstname = 0
+    lastname = 0
+    street = 0
+    city = 0
+    state = 0
+    zipcode = 0
+    contactowner = 0
+    contactowneremail = 0
+    gender = 0
+    campus = 0
+    LeadTypeID = 0
+    major = 0
+    createdate = 0
+    email = 0
+    hubspotid = 0
+    
+
+    #loop through the headers
+    #if the header is one of the correct ones we want
+    #assign the variable to that column
+    #if there are ANY data type changes in the future, look here and change the text
+    for i in range(0, sheet.ncols):  #loop through the headers
+        v = sheet.cell_value(0, i)
+        if v == "Contact ID":   #if the header is one of the correct ones we want
+            hubspotid = i  #assign the variable to that column
+        if v == "First Name":
+            firstname = i
+        if v == "Last Name":
+            lastname = i
+        if v == "Salesforce Contact ID":
+            contactid = i
+        if v == "Street Address":
+            street = i
+        if v == "City":
+            city = i
+        if v == "State/Region":
+            state = i
+        if v == "Postal Code":
+            zipcode = i
+        if v == "Contact owner":
+            contactowner = i
+        if v == "Contact Owner Email ":
+            contactowneremail = i
+        if v == "Genders":
+            gender = i
+        if v == "*Major":
+            major = i
+        if v == "Create Date":
+            createdate = i
+        if v == "Email":
+            email = i
+        if v == "*Campus":
+            campus = i
+
+
+
+
+
+
+    #check if any of the variables were not assigned
+    if contactid == 0:
+        errors += 1 # this is where we use our error to keep count
+    if firstname == 0:
+        errors += 1
+    if lastname == 0:
+        errors += 1
+    if street == 0:
+        errors += 1
+    if city == 0:
+        errors += 1
+    if state == 0:
+        errors += 1
+    if zipcode == 0:
+        errors += 1
+    if contactowner == 0:
+        errors += 1
+    if contactowneremail == 0:
+        errors += 1
+    if gender == 0:
+        errors += 1
+    if major == 0:
+        errors += 1
+    if createdate == 0:
+        errors += 1
+    if email == 0:
+        errors += 1
+    if campus == 0:
+        errors += 1
+
+
+    #if there were errors stop the program and let them know
+    if errors > 0:
+        print("Error! Please check the column headers!")
+        os.system("pause")
+
+    #NOTE:
+    #hubspotid is never checked and is assumed to be column 0. If somehow the hubspotid changes its name, this will break
+
+    #loop through target sheet and write the data to our new sheet
+    for i in range(1, sheet.nrows):
+        #write Salesforce id
+        newsheet.write(i, 0, sheet.cell_value(i, contactid), style) #finds what was put in this specific cell and puts it in our spreadsheet
+        #write name
+        newsheet.write(i, 1, sheet.cell_value(i, firstname), style)
+        newsheet.write(i, 2, sheet.cell_value(i, lastname), style)
+        #write address
+        newsheet.write(i, 3, sheet.cell_value(i, street), style)
+        newsheet.write(i, 4, sheet.cell_value(i, city), style)
+        newsheet.write(i, 5, sheet.cell_value(i, state), style)
+        newsheet.write(i, 6, sheet.cell_value(i, zipcode), style)
+        #write contact owner
+        newsheet.write(i, 7, sheet.cell_value(i, contactowner), style)
+        #write email
+        e = ""
+        e = sheet.cell_value(i, contactowneremail) #grabs contact owners email and assigns it to our email variable
+        test525 = sheet.cell_value(i, contactowner) #creating a test 525 variable  and assigning it contact owner field
+        if e == "": #if email = blank
+            if test525 != "": #if test 525 does not = blank
+                e = sheet.cell_value(i, contactowner)[0].lower() #then email = lowercase contact owner
+                lname = False  #last name false becasue we want to start with their first name
+                for j in range(0, len(sheet.cell_value(i, contactowner))): # creating new variable j and having it start to go throught the actual name of the contact owner
+                    if sheet.cell_value(i, contactowner)[j] == " ": #if there is a space then it is the last name
+                        lname = True
+                        continue
+                    if lname == False: # if there is no last name continue
+                        continue
+                    e += sheet.cell_value(i, contactowner)[j].lower() #putting it all together
+                e += "@uat.edu" #adding a @uat.edu to it
+        newsheet.write(i, 8, e, style) #writes out our result :)
+        #gender
+        newsheet.write(i, 9, sheet.cell_value(i, gender), style)
+        # campus type
+        newsheet.write(i, 10, sheet.cell_value(i, campus), style)
+        #leadtype id
+
+        test420 = sheet.cell_value(i, campus) #assigning test420 as our variable to keep track of residential status
+
+        if test420 == "Resident (On Campus)": # if campus = resident
+
+            LeadTypeID = 2 #leadtype gets the number 2
+            newsheet.write(i, 11, LeadTypeID, style) #writes out the corresponding number
+        if test420 == "Online": # repeat of above but different numbers
+
+            LeadTypeID = 15
+            newsheet.write(i, 11, LeadTypeID, style)
+
+            #newsheet.write(i, 11, sheet.cell_value(i, 15), style)
+        if test420 == "Graduate":
+
+            LeadTypeID = 10
+            newsheet.write(i, 11, LeadTypeID, style)
+
+        #anticipated major
+        newsheet.write(i, 12, sheet.cell_value(i, major), style)
+        #create date
+        newsheet.write(i, 13, sheet.cell_value(i, createdate), date_format)
+        #email
+        newsheet.write(i, 14, sheet.cell_value(i, email), style)
+        #Hubspot ID
+        newsheet.write(i, 15, sheet.cell_value(i, hubspotid), style)
+        #CampusID to determine split
+
+
+
+
+
+    newwb.save("UAT" + dmonthstring + ddaystring + dyearstring + ".xls") #adds our date to the mix
+
+    #FC VERSION
+    #all starting stuff uses same idea as before
+    newwb = xlwt.Workbook(encoding = 'ascii')
+    newsheet = newwb.add_sheet('Sheet1')
+
+    font = xlwt.Font()
+    font.name = "Calibri"
+    font.height = 11*20
+    style = xlwt.XFStyle()
+    style.font = font
+
+    newsheet.write(0, 0, "Contact ID", style)
+    newsheet.write(0, 1, "First Name", style)
+    newsheet.write(0, 2, "Last Name", style)
+    newsheet.write(0, 3, "Mailing Street", style)
+    newsheet.write(0, 4, "Mailing City", style)
+    newsheet.write(0, 5, "Mailing State/Province", style)
+    newsheet.write(0, 6, "Mailing Zip/Postal Code", style)
+    newsheet.write(0, 7, "Contact Owner", style)
+    newsheet.write(0, 8, "Owner e-mail address", style)
+    newsheet.write(0, 9, "Gender", style)
+    newsheet.write(0, 10, "Campus", style)
+    newsheet.write(0, 11, "Anticipated Major", style)
+    newsheet.write(0, 12, "Created Date", style)
+    newsheet.write(0, 13, "Email", style)
+    newsheet.write(0, 14, "HubSpot ID", style)
+
+    date_format = xlwt.XFStyle()
+    date_format.num_format_str = 'mm/dd/yyyy'
+    date_format.font = font
+
+    value = 0
+
+    for i in range(1, sheet.nrows):
+        #IMPORTANT this loop skips over anyone who is a resident of in NARS
+        if sheet.cell_value(i, 16) == "Resident (On Campus)" or sheet.cell_value(i, 16) == "NARS":
+            value += 1 #just keeps it going thru the numbers for the loop
+            continue
+        #write Salesforce id
+        test525 = sheet.cell_value(i, contactowner)
+        newsheet.write(i-value, 0, sheet.cell_value(i, contactid), style)
+        #write name
+        newsheet.write(i-value, 1, sheet.cell_value(i, firstname), style)
+        newsheet.write(i-value, 2, sheet.cell_value(i, lastname), style)
+        #write address
+        newsheet.write(i-value, 3, sheet.cell_value(i, street), style)
+        newsheet.write(i-value, 4, sheet.cell_value(i, city), style)
+        newsheet.write(i-value, 5, sheet.cell_value(i, state), style)
+        newsheet.write(i-value, 6, sheet.cell_value(i, zipcode), style)
+        #write contact owner
+        if test525 == "":
+            newsheet.write(i-value, 7, "Meghan Benson", style)
+        else:
+            newsheet.write(i-value, 7, sheet.cell_value(i, contactowner), style)
+        #write email
+        e = ""
+        e = sheet.cell_value(i, contactowneremail)
+        #test525 = sheet.cell_value(i, contactowner)
+        if e == "":
+            if test525 != "":
+                e = sheet.cell_value(i, contactowner)[0].lower()
+                lname = False
+                for j in range(0, len(sheet.cell_value(i, contactowner))):
+                    if sheet.cell_value(i, contactowner)[j] == " ":
+                        lname = True
+                        continue
+                    if lname == False:
+                        continue
+                    e += sheet.cell_value(i, contactowner)[j].lower()
+                e += "@uat.edu"
+            else: #only difference is some of them will be megans
+                e = "mbenson@uat.edu"
+        newsheet.write(i-value, 8, e, style)
+        #gender
+        newsheet.write(i-value, 9, sheet.cell_value(i, gender), style)
+        #lead type
+        newsheet.write(i-value, 10, sheet.cell_value(i, campus), style)
+        #anticipated major
+        if sheet.cell_value(i, campus) != "Graduate": #only writes major if they arn't a grad
+            newsheet.write(i-value, 11, sheet.cell_value(i, major), style)
+
+        #create date
+        newsheet.write(i-value, 13, sheet.cell_value(i, createdate), date_format)
+        #email
+        newsheet.write(i-value, 14, sheet.cell_value(i, email), style)
+        #Hubspot ID
+        newsheet.write(i-value, 15, sheet.cell_value(i, hubspotid), style)
+
+    #newwb.save("UAT" + date[0] + date[1] + date[3] + date[4] + date[8] + date[9] + " FC.xls")
+    newwb.save("UAT" + dmonthstring + ddaystring + dyearstring + " FC.xls")
+    #print("Successfully ran with " + str(errors) + " errors!")
+    #finishedbox()
+    #sys.exit(0)
+
+root = Tk() #made a progress bar assined it to varibale root
+progress = Progressbar(root, orient=HORIZONTAL,
+                        length=100, mode='determinate')
+
+
+def bar2():
+    progress['value'] = 100
+    root.update_idletasks()
+
+def MAINFUN():
+    MAINFUN2()
+    bar2()
+    finishedbox()
+    sys.exit(0)
+
+def progressbartest():
+    root.geometry("300x100+900+500")
+    # creating tkinter window
+    # Function responsible for the updation
+    # of the progress bar value
+    progress.pack(pady=10)
+    # This button will initialize
+    # the progress bar
+    Button(root, text='Click here', command=MAINFUN).pack(pady=10)
+    # infinite loop
+    mainloop()
+
+progressbartest()
+finishedbox()
+sys.exit(0)
